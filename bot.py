@@ -4,6 +4,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import json
 import datetime
+import re
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
 from dotenv import load_dotenv
@@ -11,8 +12,12 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
 if TOKEN:
-    TOKEN = TOKEN.strip()
+    # SUPER CLEAN: Remove ALL whitespace, newlines, and non-printable characters
+    TOKEN = re.sub(r'[\s\n\r\t]+', '', TOKEN)
+    # Also remove any hidden non-ASCII characters that might be present
+    TOKEN = re.sub(r'[^\x20-\x7E]', '', TOKEN)
 
 # Enable logging
 logging.basicConfig(
@@ -142,17 +147,12 @@ if __name__ == '__main__':
     # Log the status of environment variables (without showing the token)
     if not TOKEN or TOKEN == "YOUR_TOKEN_HERE":
         print("❌ Error: TELEGRAM_BOT_TOKEN is missing or not set!")
-        print("Steps to fix on Render:")
-        print("1. Go to your Render Dashboard.")
-        print("2. Click on 'Environment' on the left side menu.")
-        print("3. Add a new variable:")
-        print("   Key: TELEGRAM_BOT_TOKEN")
-        print("   Value: [Your Bot Token here]")
-        print("4. Click 'Save Changes'.")
+        print("Required: Go to Render Dashboard -> Environment -> Add 'TELEGRAM_BOT_TOKEN'")
     else:
         try:
-            # We use a short version to confirm it started
-            print(f"✅ Starting bot with token prefix: {TOKEN[:5]}...")
+            # Masked token for logging
+            masked = TOKEN[:5] + "..." + TOKEN[-5:] if len(TOKEN) > 10 else "SHORT_TOKEN"
+            print(f"✅ Starting bot with cleaned token: {masked}")
             
             application = ApplicationBuilder().token(TOKEN).build()
             
