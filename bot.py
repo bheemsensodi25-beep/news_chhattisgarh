@@ -137,23 +137,32 @@ async def daily_news_job(context: ContextTypes.DEFAULT_TYPE):
                 logging.error(f"Error sending to {chat_id}: {e}")
 
 if __name__ == '__main__':
+    # Log the status of environment variables (without showing the token)
     if not TOKEN or TOKEN == "YOUR_TOKEN_HERE":
-        print("❌ Error: TELEGRAM_BOT_TOKEN not found in .env file.")
+        print("❌ Error: TELEGRAM_BOT_TOKEN is missing or not set!")
+        print("Steps to fix on Render:")
+        print("1. Go to your Render Dashboard.")
+        print("2. Click on 'Environment' on the left side menu.")
+        print("3. Add a new variable:")
+        print("   Key: TELEGRAM_BOT_TOKEN")
+        print("   Value: [Your Bot Token here]")
+        print("4. Click 'Save Changes'.")
     else:
         try:
-            # Note: For Scheduling, you need python-telegram-bot[job-queue] which installs apscheduler
+            # We use a short version to confirm it started
+            print(f"✅ Starting bot with token prefix: {TOKEN[:5]}...")
+            
             application = ApplicationBuilder().token(TOKEN).build()
             
-            application.add_handler(CommandHandler('start', start))
+            application.add_handler(CommandHandler('start', start) )
             application.add_handler(CommandHandler('news', news_command))
             
-            # Schedule the job at 8:00 AM IST
-            # System time is already in IST (+05:30) as per metadata
+            # Schedule daily news at 8:00 AM
             target_time = datetime.time(hour=8, minute=0, second=0)
             application.job_queue.run_daily(daily_news_job, time=target_time)
             
-            print("✅ Bot is running... Daily news scheduled at 8:00 AM")
+            print("🚀 Bot is running... Daily news scheduled at 8:00 AM")
             application.run_polling()
         except Exception as e:
-            print(f"❌ Error: {e}")
-            print("Tip: Make sure 'python-telegram-bot[job-queue]' is installed.")
+            print(f"❌ Error starting bot: {e}")
+            print("Make sure you installed dependencies with: pip install python-telegram-bot[job-queue]")
