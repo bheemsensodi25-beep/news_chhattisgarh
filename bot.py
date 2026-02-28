@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+if TOKEN:
+    TOKEN = TOKEN.strip()
 
 # Enable logging
 logging.basicConfig(
